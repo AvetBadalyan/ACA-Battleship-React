@@ -86,12 +86,14 @@
 .cell.previewValid {
   background: linear-gradient(135deg, var(--success-color), var(--success-dark));
   border-color: var(--success-color);
+  box-shadow: 0 0 15px rgba(46, 213, 115, 0.4); /* fallback for older browsers */
   box-shadow: 0 0 15px color-mix(in srgb, var(--success-color) 40%, transparent);
 }
 
 .cell.previewInvalid {
   background: linear-gradient(135deg, var(--error-color), var(--error-dark));
   border-color: var(--error-color);
+  box-shadow: 0 0 15px rgba(255, 71, 87, 0.4); /* fallback for older browsers */
   box-shadow: 0 0 15px color-mix(in srgb, var(--error-color) 40%, transparent);
 }
 

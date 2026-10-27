@@ -112,6 +112,15 @@ button {
     0 0 20px var(--accent-glow);
 }
 
+/* .btn:focus-visible sets box-shadow alone, which would erase this glow.
+   Stack the inset ring on top of the existing shadows instead. */
+.btn-primary:focus-visible {
+  box-shadow:
+    inset 0 0 0 2px var(--accent-primary),
+    var(--shadow-md),
+    0 0 20px var(--accent-glow);
+}
+
 .btn-primary:hover:not(:disabled) {
   transform: translateY(-2px);
   box-shadow:
@@ -140,6 +149,7 @@ button {
 }
 
 .btn-danger:hover:not(:disabled) {
+  background: #ff7a85; /* fallback: lighter red for browsers without color-mix */
   background: color-mix(in srgb, var(--error-color) 80%, white);
 }
 

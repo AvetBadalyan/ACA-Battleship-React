@@ -122,4 +122,14 @@ export interface AIHuntState {
 
   /** Cells to try next (neighbours of previous hits), used as a FIFO queue */
   targetQueue: Position[];
+
+  /**
+   * Accumulates hit positions on the ship currently being chased.
+   * Once two collinear hits are known, shipDirection is set and the queue
+   * is filtered to only cells along that axis — avoiding wasted perpendicular shots.
+   */
+  hitStack: Position[];
+
+  /** Set once two collinear hits establish the ship's orientation. */
+  shipDirection: 'horizontal' | 'vertical' | null;
 }

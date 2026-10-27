@@ -28,6 +28,8 @@ export function createAIHuntState(): AIHuntState {
   return {
     mode: 'hunt',
     targetQueue: [],
+    hitStack: [],
+    shipDirection: null,
   };
 }
 
@@ -49,6 +51,12 @@ function getAdjacentCells(pos: Position): Position[] {
  */
 function getRandomShot(board: Board): Position {
   const available = getUntriedCells(board);
+  // In a real game this never happens (the game ends once all ships are
+  // sunk, long before the board fills up), but guard anyway so we never
+  // return undefined and crash the next shot.
+  if (available.length === 0) {
+    return { row: 0, col: 0 };
+  }
   return available[Math.floor(Math.random() * available.length)];
 }
 
@@ -68,20 +76,33 @@ export function getAIShot(
   while (targetQueue.length > 0) {
     const target = targetQueue.shift()!; // take the next queued cell
     if (!isCellShot(board, target)) {
-      return { position: target, newState: { mode: 'target', targetQueue } };
+      return {
+        position: target,
+        newState: {
+          mode: 'target',
+          targetQueue,
+          hitStack: huntState.hitStack,
+          shipDirection: huntState.shipDirection,
+        },
+      };
     }
     // Already shot -> skip it and try the next queued cell.
   }
 
   // Hunt mode: nothing queued, fire at a random untried cell.
-  return { position: getRandomShot(board), newState: { mode: 'hunt', targetQueue: [] } };
+  return {
+    position: getRandomShot(board),
+    newState: { mode: 'hunt', targetQueue: [], hitStack: [], shipDirection: null },
+  };
 }
 
 /**
  * Updates the AI state after a shot.
  * - On a hit, queue the neighbouring cells (skipping ones already shot or
  *   already queued) so the AI targets them next.
- * - On a sunk ship, clear the queue and go back to hunting.
+ * - Once two collinear hits establish the ship's axis, prune the queue to
+ *   cells along that axis so the AI doesn't waste shots perpendicular to it.
+ * - On a sunk ship, clear everything and go back to hunting.
  * - On a miss, leave the queue as-is.
  */
 export function updateAIHuntState(
@@ -90,21 +111,40 @@ export function updateAIHuntState(
   result: 'hit' | 'miss' | 'sunk',
   board: Board
 ): AIHuntState {
-  // Ship destroyed: stop targeting and go back to hunting.
+  // Ship destroyed: stop targeting and reset all tracking state.
   if (result === 'sunk') {
-    return { mode: 'hunt', targetQueue: [] };
+    return { mode: 'hunt', targetQueue: [], hitStack: [], shipDirection: null };
   }
 
-  // Hit: queue the neighbouring cells (skip ones already shot or queued).
+  // Hit: update the hit stack, detect direction, then update the queue.
   if (result === 'hit') {
-    const targetQueue = [...state.targetQueue];
+    const hitStack = [...state.hitStack, position];
+    let targetQueue = [...state.targetQueue];
+    let { shipDirection } = state;
+
+    // Determine axis once we have two hits on the same ship.
+    if (shipDirection === null && hitStack.length >= 2) {
+      const first = hitStack[0];
+      shipDirection = first.row === position.row ? 'horizontal' : 'vertical';
+
+      // Prune queued cells that don't lie on the detected axis.
+      targetQueue = targetQueue.filter((t) =>
+        shipDirection === 'horizontal' ? t.row === position.row : t.col === position.col
+      );
+    }
+
+    // Add neighbours of this hit that are still on the board, untried, and
+    // consistent with the known direction (if established).
     for (const adj of getAdjacentCells(position)) {
+      if (shipDirection === 'horizontal' && adj.row !== position.row) continue;
+      if (shipDirection === 'vertical' && adj.col !== position.col) continue;
       const alreadyQueued = targetQueue.some((t) => t.row === adj.row && t.col === adj.col);
       if (!isCellShot(board, adj) && !alreadyQueued) {
         targetQueue.push(adj);
       }
     }
-    return { mode: 'target', targetQueue };
+
+    return { mode: 'target', targetQueue, hitStack, shipDirection };
   }
 
   // Miss: keep the state unchanged.

@@ -15,7 +15,7 @@
 }
 
 .logoIcon {
-  font-size: var(--fs-xl);
+  font-size: var(--fs-4xl); /* 32px – matches original 2rem at 16px base */
   animation: float 3s ease-in-out infinite;
 }
 

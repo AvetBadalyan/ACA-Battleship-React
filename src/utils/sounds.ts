@@ -39,9 +39,10 @@ const sounds: Record<SoundName, HTMLAudioElement> = {
   click: new Audio(clickUrl),
 };
 
-/** Master volume for all effects (0-1). */
+/** Master volume for all effects (0-1). Defer fetching until first play. */
 Object.values(sounds).forEach((audio) => {
   audio.volume = 0.5;
+  audio.preload = 'none'; // don't fetch all 8 files on page load
 });
 
 let soundEnabled = true;
