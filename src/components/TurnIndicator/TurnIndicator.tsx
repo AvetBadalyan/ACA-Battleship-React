@@ -25,6 +25,9 @@ export function TurnIndicator({ currentTurn, lastShot }: TurnIndicatorProps) {
   return (
     <motion.div
       className={styles.container}
+      // Announce turn changes and shot results to screen readers as they happen.
+      role="status"
+      aria-live="polite"
       initial={{ opacity: 0, y: -10 }}
       animate={{ opacity: 1, y: 0 }}
     >
@@ -41,17 +44,21 @@ export function TurnIndicator({ currentTurn, lastShot }: TurnIndicatorProps) {
         </motion.div>
       </div>
 
-      {lastShot && (
-        <motion.div
-          key={`${lastShot.position.row}-${lastShot.position.col}`}
-          className={`${styles.lastShot} ${styles[lastShot.result]}`}
-          initial={{ scale: 1.5, opacity: 0 }}
-          animate={{ scale: 1, opacity: 1 }}
-          transition={{ type: 'spring', stiffness: 400 }}
-        >
-          {getLastShotMessage()}
-        </motion.div>
-      )}
+      {/* Always rendered so its height is reserved from the first frame —
+          prevents the boards from jumping down when the first shot result appears. */}
+      <div className={styles.lastShotWrapper}>
+        {lastShot && (
+          <motion.div
+            key={`${lastShot.position.row}-${lastShot.position.col}`}
+            className={`${styles.lastShot} ${styles[lastShot.result]}`}
+            initial={{ scale: 1.5, opacity: 0 }}
+            animate={{ scale: 1, opacity: 1 }}
+            transition={{ type: 'spring', stiffness: 400 }}
+          >
+            {getLastShotMessage()}
+          </motion.div>
+        )}
+      </div>
     </motion.div>
   );
 }

@@ -2,8 +2,11 @@
   min-height: 100vh;
   display: flex;
   flex-direction: column;
-  background: var(--bg-primary);
-  background-image: url('@/assets/battleship-wallpapers.jpg');
+  background-color: var(--bg-primary);
+  /* Pre-optimized WebP background (~47 KB, down from the original ~287 KB
+     JPG). WebP is supported by ~97% of browsers; the solid background-color
+     above shows through for the rest. */
+  background-image: url('@/assets/battleship-wallpapers.webp');
   background-size: cover;
   background-attachment: fixed;
   background-position: center;
@@ -65,7 +68,7 @@
   gap: 8px 20px;
 }
 
-.instructions h3 {
+.instructions h2 {
   font-size: var(--fs-lg);
   color: var(--accent-primary);
   margin: 0;
@@ -127,11 +130,27 @@
   flex-wrap: wrap;
 }
 
+/* Default (≤ 1339px): stats below their board */
 .boardSection {
   display: flex;
   flex-direction: column;
   align-items: center;
   gap: 16px;
+}
+
+/* Wide screens (≥ 1340px): stats sit beside their board.
+   Board ~478px + 12px gap + stats 140px = 630px per section;
+   2 sections + 16px gap = 1276px content, fits inside a 1366px viewport. */
+@media (min-width: 1340px) {
+  .gameBoards {
+    gap: 16px;
+  }
+
+  .boardSection {
+    flex-direction: row;
+    align-items: flex-start;
+    gap: 12px;
+  }
 }
 
 /* Responsive */

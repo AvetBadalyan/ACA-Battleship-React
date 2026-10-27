@@ -56,6 +56,15 @@
   white-space: nowrap;
 }
 
+.lastShotWrapper {
+  /* Always occupy this height so the boards never jump down when the
+     first shot result appears. Height = fs-2xl (2.4rem) + 2×8px padding. */
+  min-height: 4rem;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
 .lastShot {
   font-size: var(--fs-2xl);
   font-weight: 700;
