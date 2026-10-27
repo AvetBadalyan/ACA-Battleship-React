@@ -39,7 +39,7 @@ export function ShipSelector({
       animate={{ opacity: 1, x: 0 }}
       transition={{ duration: 0.3, delay: 0.1 }}
     >
-      <h3 className={styles.title}>Fleet</h3>
+      <h2 className={styles.title}>Fleet</h2>
 
       <div className={styles.shipList}>
         {SHIP_TYPES.map((ship) => {

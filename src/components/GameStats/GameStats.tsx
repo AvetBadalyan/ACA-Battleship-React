@@ -31,7 +31,7 @@ export function GameStats({ stats, ships, title, isPlayer = false }: GameStatsPr
       animate={{ opacity: 1, y: 0 }}
       transition={{ duration: 0.3 }}
     >
-      <h4 className={styles.title}>{title}</h4>
+      <h3 className={styles.title}>{title}</h3>
 
       <div className={styles.statsGrid}>
         <div className={styles.stat}>

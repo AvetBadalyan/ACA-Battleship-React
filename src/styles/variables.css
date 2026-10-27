@@ -128,7 +128,9 @@
 
   --success-color: #2e7d32;
   --success-dark: #1b5e20;
-  --warning-color: #f57c00;
+  /* Deepened from #f57c00 so the "Hit!" message text clears WCAG AA on the
+     light background (#f57c00 was ~2.4:1; this is ~4.3:1). */
+  --warning-color: #b35900;
   --error-color: #d32f2f;
   --error-dark: #8b1a1a;
 

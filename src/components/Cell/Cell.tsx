@@ -1,11 +1,18 @@
-import { Cell as CellType } from '@/types';
+import { Cell as CellType, Position } from '@/types';
 import { motion } from 'framer-motion';
+import { memo } from 'react';
 import type { KeyboardEvent as ReactKeyboardEvent } from 'react';
 import styles from './Cell.module.css';
 
 interface CellProps {
   cell: CellType;
-  onClick?: () => void;
+  // These callbacks take the cell's position so the parent can pass ONE
+  // stable function to every cell instead of creating a new closure per
+  // cell on each render. That's what lets React.memo below actually skip
+  // re-rendering cells that didn't change (200 cells across two boards).
+  onClick?: (position: Position) => void;
+  onMouseEnter?: (position: Position) => void;
+  onMouseLeave?: () => void;
   isPreview?: boolean;
   isValidPreview?: boolean;
   isPlayerBoard?: boolean;
@@ -13,9 +20,11 @@ interface CellProps {
   disabled?: boolean;
 }
 
-export function Cell({
+function CellComponent({
   cell,
   onClick,
+  onMouseEnter,
+  onMouseLeave,
   isPreview = false,
   isValidPreview = true,
   isPlayerBoard = false,
@@ -23,6 +32,7 @@ export function Cell({
   disabled = false,
 }: CellProps) {
   const { state } = cell;
+  const { row, col } = cell.position;
 
   const getClassName = () => {
     const classes = [styles.cell];
@@ -57,18 +67,17 @@ export function Cell({
 
   const handleClick = () => {
     if (isInteractive) {
-      onClick!();
+      onClick!(cell.position);
     }
   };
 
   const handleKeyDown = (event: ReactKeyboardEvent<HTMLDivElement>) => {
     if (isInteractive && (event.key === 'Enter' || event.key === ' ')) {
       event.preventDefault();
-      onClick!();
+      onClick!(cell.position);
     }
   };
 
-  const { row, col } = cell.position;
   const coord = `${String.fromCharCode(65 + col)}${row + 1}`;
   const ariaLabel = isInteractive ? `Fire at ${coord}` : `Cell ${coord}, ${state}`;
 
@@ -77,6 +86,8 @@ export function Cell({
       className={getClassName()}
       onClick={handleClick}
       onKeyDown={isInteractive ? handleKeyDown : undefined}
+      onMouseEnter={onMouseEnter ? () => onMouseEnter(cell.position) : undefined}
+      onMouseLeave={onMouseLeave}
       role={isInteractive ? 'button' : undefined}
       tabIndex={isInteractive ? 0 : undefined}
       aria-label={onClick ? ariaLabel : undefined}
@@ -128,3 +139,31 @@ export function Cell({
     </motion.div>
   );
 }
+
+/**
+ * Only re-render a cell when something it actually shows has changed.
+ *
+ * This custom compare is needed because every shot rebuilds the whole board
+ * with fresh cell objects (immutable update), so the default shallow compare
+ * would see a new `cell` reference for all 100 cells and re-render every one.
+ * We compare the fields that affect what's drawn instead of the object
+ * reference. Return true to SKIP the re-render.
+ */
+function areEqual(prev: CellProps, next: CellProps): boolean {
+  return (
+    prev.cell.state === next.cell.state &&
+    prev.cell.shipId === next.cell.shipId &&
+    prev.isPreview === next.isPreview &&
+    prev.isValidPreview === next.isValidPreview &&
+    prev.isPlayerBoard === next.isPlayerBoard &&
+    prev.showShips === next.showShips &&
+    prev.disabled === next.disabled &&
+    prev.onClick === next.onClick &&
+    prev.onMouseEnter === next.onMouseEnter &&
+    prev.onMouseLeave === next.onMouseLeave
+  );
+}
+
+// Every shot updates just a couple of cells; this memo stops the other
+// ~98 from re-rendering. See areEqual for why a custom compare is required.
+export const Cell = memo(CellComponent, areEqual);

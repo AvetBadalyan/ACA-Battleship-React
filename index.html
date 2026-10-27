@@ -8,7 +8,50 @@
       name="description"
       content="Battleship - A classic naval strategy game with AI opponent"
     />
+
+    <!-- Theme color matches the dark/light background so the browser UI blends in. -->
+    <meta name="theme-color" content="#0a1628" media="(prefers-color-scheme: dark)" />
+    <meta name="theme-color" content="#e8f4fc" media="(prefers-color-scheme: light)" />
+
+    <!-- Open Graph / Twitter cards for a tidy preview when the demo link is shared. -->
+    <meta property="og:type" content="website" />
+    <meta property="og:title" content="Battleship" />
+    <meta
+      property="og:description"
+      content="A classic naval strategy game with an AI opponent, built with React and TypeScript."
+    />
+    <meta property="og:url" content="https://aca-battleship.vercel.app/" />
+    <meta property="og:image" content="https://aca-battleship.vercel.app/og-image.png" />
+    <meta name="twitter:card" content="summary_large_image" />
+    <meta name="twitter:title" content="Battleship" />
+    <meta
+      name="twitter:description"
+      content="A classic naval strategy game with an AI opponent, built with React and TypeScript."
+    />
+    <meta name="twitter:image" content="https://aca-battleship.vercel.app/og-image.png" />
+
     <title>Battleship</title>
+
+    <!--
+      Set the theme before the app renders so there's no flash of the wrong
+      colours. We read the same localStorage key Zustand persists to; if it's
+      missing we fall back to the OS preference. Kept tiny and inline on
+      purpose so it runs before the stylesheet paints.
+    -->
+    <script>
+      (function () {
+        try {
+          var stored = localStorage.getItem('battleship-settings');
+          var theme = stored && JSON.parse(stored).state && JSON.parse(stored).state.theme;
+          if (theme !== 'dark' && theme !== 'light') {
+            theme = window.matchMedia('(prefers-color-scheme: light)').matches ? 'light' : 'dark';
+          }
+          document.documentElement.setAttribute('data-theme', theme);
+        } catch (e) {
+          document.documentElement.setAttribute('data-theme', 'dark');
+        }
+      })();
+    </script>
   </head>
   <body>
     <div id="root"></div>

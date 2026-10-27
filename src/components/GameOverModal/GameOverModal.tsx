@@ -1,4 +1,6 @@
 import { motion, AnimatePresence } from 'framer-motion';
+import { useEffect, useRef } from 'react';
+import { createPortal } from 'react-dom';
 import { Player, GameStats as GameStatsType } from '@/types';
 import styles from './GameOverModal.module.css';
 
@@ -19,6 +21,31 @@ export function GameOverModal({
 }: GameOverModalProps) {
   const isVictory = winner === 'player';
 
+  // Focus management: when the modal opens, remember what was focused,
+  // move focus to the Play Again button, and restore focus when it closes.
+  const playAgainRef = useRef<HTMLButtonElement>(null);
+  const previouslyFocused = useRef<HTMLElement | null>(null);
+
+  useEffect(() => {
+    if (!isOpen) return;
+
+    previouslyFocused.current = document.activeElement as HTMLElement | null;
+    playAgainRef.current?.focus();
+
+    // Escape closes the modal (same as clicking Play Again).
+    const handleKeyDown = (event: KeyboardEvent) => {
+      if (event.key === 'Escape') {
+        onPlayAgain();
+      }
+    };
+    window.addEventListener('keydown', handleKeyDown);
+
+    return () => {
+      window.removeEventListener('keydown', handleKeyDown);
+      previouslyFocused.current?.focus();
+    };
+  }, [isOpen, onPlayAgain]);
+
   const getAccuracy = (stats: GameStatsType) => {
     return stats.shotsFired > 0 ? Math.round((stats.hits / stats.shotsFired) * 100) : 0;
   };
@@ -31,7 +58,10 @@ export function GameOverModal({
     return `${mins}:${secs.toString().padStart(2, '0')}`;
   };
 
-  return (
+  // Render into document.body via a portal so the overlay escapes the
+  // `.app > *` stacking context and can dim the whole viewport (header
+  // included) and centre the modal on the real viewport.
+  return createPortal(
     <AnimatePresence>
       {isOpen && (
         <motion.div
@@ -42,6 +72,9 @@ export function GameOverModal({
         >
           <motion.div
             className={`${styles.modal} ${isVictory ? styles.victory : styles.defeat}`}
+            role="dialog"
+            aria-modal="true"
+            aria-labelledby="gameover-title"
             initial={{ scale: 0.5, opacity: 0, y: 50 }}
             animate={{ scale: 1, opacity: 1, y: 0 }}
             exit={{ scale: 0.5, opacity: 0, y: 50 }}
@@ -56,7 +89,9 @@ export function GameOverModal({
               >
                 {isVictory ? '🏆' : '💀'}
               </motion.div>
-              <h2 className={styles.title}>{isVictory ? 'Victory!' : 'Defeat'}</h2>
+              <h2 id="gameover-title" className={styles.title}>
+                {isVictory ? 'Victory!' : 'Defeat'}
+              </h2>
               <p className={styles.subtitle}>
                 {isVictory
                   ? "You've destroyed the enemy fleet!"
@@ -66,7 +101,7 @@ export function GameOverModal({
 
             <div className={styles.statsComparison}>
               <div className={styles.statColumn}>
-                <h4 className={styles.statTitle}>Your Stats</h4>
+                <h3 className={styles.statTitle}>Your Stats</h3>
                 <div className={styles.statItem}>
                   <span>Shots Fired</span>
                   <span className={styles.statValue}>{playerStats.shotsFired}</span>
@@ -90,7 +125,7 @@ export function GameOverModal({
               <div className={styles.divider} />
 
               <div className={styles.statColumn}>
-                <h4 className={styles.statTitle}>AI Stats</h4>
+                <h3 className={styles.statTitle}>AI Stats</h3>
                 <div className={styles.statItem}>
                   <span>Shots Fired</span>
                   <span className={styles.statValue}>{aiStats.shotsFired}</span>
@@ -118,6 +153,7 @@ export function GameOverModal({
             </div>
 
             <motion.button
+              ref={playAgainRef}
               className={`btn btn-primary ${styles.playAgainBtn}`}
               onClick={onPlayAgain}
               whileHover={{ scale: 1.05 }}
@@ -128,6 +164,7 @@ export function GameOverModal({
           </motion.div>
         </motion.div>
       )}
-    </AnimatePresence>
+    </AnimatePresence>,
+    document.body
   );
 }

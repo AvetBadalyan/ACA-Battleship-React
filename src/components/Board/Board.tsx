@@ -2,7 +2,7 @@ import { Cell } from '@/components/Cell';
 import { Board as BoardType, Orientation, Position, ShipType } from '@/types';
 import { canPlaceShip, getShipPositions } from '@/utils/board';
 import { motion } from 'framer-motion';
-import { useCallback, useState } from 'react';
+import { useCallback, useMemo, useState } from 'react';
 import styles from './Board.module.css';
 
 interface BoardProps {
@@ -60,29 +60,41 @@ export function Board({
 
   const { positions: previewPositions, isValid: isValidPlacement } = getPreviewPositions();
 
-  const isPreviewCell = (row: number, col: number): boolean => {
-    return previewPositions.some((p) => p.row === row && p.col === col);
-  };
+  // Keys of the cells in the current preview, e.g. "3-4". A plain Set lookup
+  // is O(1) per cell instead of scanning the positions array for all 100.
+  const previewKeys = useMemo(
+    () => new Set(previewPositions.map((p) => `${p.row}-${p.col}`)),
+    [previewPositions]
+  );
 
-  const handleCellClick = (position: Position) => {
-    if (disabled) return;
+  // The three handlers below are wrapped in useCallback so each keeps the
+  // same identity between renders. That stable identity is what lets the
+  // memoized Cell skip re-rendering when nothing about that cell changed.
+  const handleCellClick = useCallback(
+    (position: Position) => {
+      if (disabled) return;
 
-    if (selectedShip && onShipPlace) {
-      onShipPlace(position);
-    } else if (onCellClick) {
-      onCellClick(position);
-    }
-  };
+      if (selectedShip && onShipPlace) {
+        onShipPlace(position);
+      } else if (onCellClick) {
+        onCellClick(position);
+      }
+    },
+    [disabled, selectedShip, onShipPlace, onCellClick]
+  );
 
-  const handleMouseEnter = (position: Position) => {
-    if (selectedShip) {
-      setHoverPos(position);
-    }
-  };
+  const handleMouseEnter = useCallback(
+    (position: Position) => {
+      if (selectedShip) {
+        setHoverPos(position);
+      }
+    },
+    [selectedShip]
+  );
 
-  const handleMouseLeave = () => {
+  const handleMouseLeave = useCallback(() => {
     setHoverPos(null);
-  };
+  }, []);
 
   return (
     <motion.div
@@ -91,7 +103,7 @@ export function Board({
       animate={{ opacity: 1, y: 0 }}
       transition={{ duration: 0.3 }}
     >
-      <h3 className={styles.title}>{title}</h3>
+      <h2 className={styles.title}>{title}</h2>
 
       <div className={styles.boardWrapper}>
         {/* Column labels */}
@@ -110,21 +122,18 @@ export function Board({
             <div key={rowIndex} className={styles.row}>
               <div className={styles.rowLabel}>{LABELS.rows[rowIndex]}</div>
               {row.map((cell, colIndex) => (
-                <div
+                <Cell
                   key={`${rowIndex}-${colIndex}`}
-                  onMouseEnter={() => handleMouseEnter({ row: rowIndex, col: colIndex })}
+                  cell={cell}
+                  onClick={handleCellClick}
+                  onMouseEnter={handleMouseEnter}
                   onMouseLeave={handleMouseLeave}
-                >
-                  <Cell
-                    cell={cell}
-                    onClick={() => handleCellClick({ row: rowIndex, col: colIndex })}
-                    isPreview={isPreviewCell(rowIndex, colIndex)}
-                    isValidPreview={isValidPlacement}
-                    isPlayerBoard={isPlayerBoard}
-                    showShips={showShips}
-                    disabled={disabled}
-                  />
-                </div>
+                  isPreview={previewKeys.has(`${rowIndex}-${colIndex}`)}
+                  isValidPreview={isValidPlacement}
+                  isPlayerBoard={isPlayerBoard}
+                  showShips={showShips}
+                  disabled={disabled}
+                />
               ))}
             </div>
           ))}

@@ -18,6 +18,20 @@ import { playSound, setSoundEnabled } from '@/utils/sounds';
 import { create } from 'zustand';
 import { persist } from 'zustand/middleware';
 
+/**
+ * Picks the starting theme for a first-time visitor by reading the OS
+ * setting (prefers-color-scheme). Defaults to dark if the browser can't
+ * tell us. Once the user toggles the theme, the persisted value takes over
+ * and this is no longer consulted.
+ */
+const getInitialTheme = (): 'dark' | 'light' => {
+  if (typeof window !== 'undefined' && window.matchMedia) {
+    const prefersLight = window.matchMedia('(prefers-color-scheme: light)').matches;
+    return prefersLight ? 'light' : 'dark';
+  }
+  return 'dark';
+};
+
 /** Fresh stats object (a function so each game gets its own copy). */
 const createEmptyStats = (): GameStats => ({
   shotsFired: 0,
@@ -69,7 +83,8 @@ export const useGameStore = create<GameStore>()(
       lastShot: null,
 
       soundEnabled: true,
-      theme: 'dark',
+      // First visit follows the OS setting; after that the persisted value wins.
+      theme: getInitialTheme(),
 
       aiHuntState: createAIHuntState(),
 
@@ -343,3 +358,35 @@ export const useGameStore = create<GameStore>()(
     }
   )
 );
+
+/**
+ * Dev-only helper so you can preview the end-game modal without playing a
+ * whole match. In the browser console run:
+ *   __previewGameOver('player')   // Victory screen
+ *   __previewGameOver('ai')       // Defeat screen
+ * This block is stripped from production builds by the import.meta.env.DEV
+ * guard (Vite replaces it with `false` and tree-shakes it away).
+ */
+if (import.meta.env.DEV) {
+  (window as unknown as Record<string, unknown>).__previewGameOver = (winner: 'player' | 'ai') => {
+    const sampleStats: GameStats = {
+      shotsFired: 42,
+      hits: 17,
+      misses: 25,
+      shipsDestroyed: winner === 'player' ? 5 : 3,
+      startTime: Date.now() - 3 * 60 * 1000,
+      endTime: Date.now(),
+    };
+    useGameStore.setState({
+      phase: 'gameOver',
+      winner,
+      playerStats: sampleStats,
+      aiStats: {
+        ...sampleStats,
+        shotsFired: 41,
+        hits: 14,
+        shipsDestroyed: winner === 'ai' ? 5 : 2,
+      },
+    });
+  };
+}

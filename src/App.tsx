@@ -73,6 +73,55 @@ function App() {
         toggleOrientation();
       }
     },
+    // Dev shortcut: press V to preview victory screen, D for defeat
+    v: () => {
+      if (import.meta.env.DEV) {
+        useGameStore.setState({
+          phase: 'gameOver',
+          winner: 'player',
+          playerStats: {
+            shotsFired: 72,
+            hits: 17,
+            misses: 55,
+            shipsDestroyed: 5,
+            startTime: Date.now() - 200000,
+            endTime: Date.now(),
+          },
+          aiStats: {
+            shotsFired: 71,
+            hits: 14,
+            misses: 57,
+            shipsDestroyed: 2,
+            startTime: Date.now() - 200000,
+            endTime: Date.now(),
+          },
+        });
+      }
+    },
+    d: () => {
+      if (import.meta.env.DEV) {
+        useGameStore.setState({
+          phase: 'gameOver',
+          winner: 'ai',
+          playerStats: {
+            shotsFired: 65,
+            hits: 12,
+            misses: 53,
+            shipsDestroyed: 3,
+            startTime: Date.now() - 180000,
+            endTime: Date.now(),
+          },
+          aiStats: {
+            shotsFired: 66,
+            hits: 17,
+            misses: 49,
+            shipsDestroyed: 5,
+            startTime: Date.now() - 180000,
+            endTime: Date.now(),
+          },
+        });
+      }
+    },
   });
 
   return (
@@ -113,7 +162,7 @@ function App() {
               </div>
 
               <div className={styles.instructions}>
-                <h3>📋 Instructions</h3>
+                <h2>📋 Instructions</h2>
                 <ul>
                   <li>Select a ship from the fleet panel</li>
                   <li>Click on the board to place it</li>

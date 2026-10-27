@@ -152,8 +152,6 @@ npm run lint     # Run ESLint
 
 ## 🏗️ Architecture Overview
 
-For detailed architecture documentation, see [ARCHITECTURE.md](./ARCHITECTURE.md).
-
 ### Project Structure
 
 ```
