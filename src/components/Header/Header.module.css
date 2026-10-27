@@ -102,3 +102,20 @@
     font-size: var(--fs-xl);
   }
 }
+
+@media (max-width: 480px) {
+  .title {
+    font-size: var(--fs-lg);
+    letter-spacing: 0.05em;
+  }
+
+  .logoIcon {
+    font-size: var(--fs-xl);
+  }
+
+  .iconButton {
+    width: 36px;
+    height: 36px;
+    font-size: var(--fs-lg);
+  }
+}

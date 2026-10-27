@@ -116,3 +116,23 @@
     font-size: var(--fs-xl);
   }
 }
+
+@media (max-width: 480px) {
+  .turnBadge {
+    padding: 8px 12px;
+    font-size: var(--fs-sm);
+    gap: 6px;
+  }
+
+  .turnIcon {
+    font-size: var(--fs-lg);
+  }
+
+  .lastShot {
+    font-size: var(--fs-lg);
+  }
+
+  .lastShotWrapper {
+    min-height: 3.2rem;
+  }
+}
