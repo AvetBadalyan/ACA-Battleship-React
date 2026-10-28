@@ -98,9 +98,11 @@
   --bg-tertiary: #b8dced;
   --bg-card: #ffffff;
 
-  /* Light theme dims strongly: the light UI must stay readable over the
-     dark background photo. */
-  --bg-overlay-opacity: 0.9;
+  /* Light theme dims the dark photo as little as possible while keeping the
+     light UI readable. 0.65 is the floor: over the darkest part of the image
+     (the ship hull), dark body text still clears WCAG AA (~4.5:1). Going
+     lower (e.g. 0.5) drops that to ~2.9:1 and fails. */
+  --bg-overlay-opacity: 0.65;
 
   --text-primary: #1a3a5c;
   --text-secondary: #3a6080;
