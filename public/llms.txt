@@ -1,0 +1,12 @@
+# Battleship
+
+A single-player Battleship game with an AI opponent, built with React 19,
+TypeScript, and Vite. Place a fleet of five ships on a 10x10 grid, then take
+turns firing at the enemy board until one side's ships are all sunk. The AI
+uses a Hunt/Target strategy: it fires randomly until it lands a hit, then
+works along adjacent cells to finish the ship.
+
+## Links
+
+- [Play the game](https://aca-battleship.vercel.app/)
+- [Source code on GitHub](https://github.com/AvetBadalyan/ACA-Battleship-React)

@@ -1,0 +1,17 @@
+{
+  "specVersion": "1.0",
+  "host": {
+    "name": "Battleship",
+    "url": "https://aca-battleship.vercel.app/"
+  },
+  "entries": [
+    {
+      "identifier": "urn:air:aca-battleship.vercel.app:webapp:battleship",
+      "displayName": "Battleship",
+      "type": "text/html",
+      "description": "A single-player Battleship game with an AI opponent, built with React and TypeScript. Place your fleet, then take turns firing until one side's ships are all sunk.",
+      "tags": ["game", "battleship", "react", "typescript"],
+      "url": "https://aca-battleship.vercel.app/"
+    }
+  ]
+}
