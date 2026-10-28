@@ -38,12 +38,14 @@ export function Board({
 }: BoardProps) {
   const [hoverPos, setHoverPos] = useState<Position | null>(null);
 
-  // Calculate preview positions for ship placement
-  const getPreviewPositions = useCallback((): {
-    positions: Position[];
-    isValid: boolean;
-  } => {
-    if (!selectedShip || !hoverPos) return { positions: [], isValid: false };
+  // The cells the selected ship would occupy at the hovered position, and
+  // whether that placement is valid. Recomputed with useMemo only when an
+  // input changes. previewKeys is a Set of "row-col" strings for O(1) lookup
+  // per cell (instead of scanning the positions array for all 100 cells).
+  const { previewKeys, isValidPlacement } = useMemo(() => {
+    if (!selectedShip || !hoverPos) {
+      return { previewKeys: new Set<string>(), isValidPlacement: false };
+    }
 
     const positions = getShipPositions(hoverPos, selectedShip.size, shipOrientation);
     const isPlaced = placedShipIds.includes(selectedShip.id);
@@ -55,17 +57,11 @@ export function Board({
       isPlaced ? selectedShip.id : undefined
     );
 
-    return { positions, isValid };
+    return {
+      previewKeys: new Set(positions.map((p) => `${p.row}-${p.col}`)),
+      isValidPlacement: isValid,
+    };
   }, [selectedShip, hoverPos, shipOrientation, board, placedShipIds]);
-
-  const { positions: previewPositions, isValid: isValidPlacement } = getPreviewPositions();
-
-  // Keys of the cells in the current preview, e.g. "3-4". A plain Set lookup
-  // is O(1) per cell instead of scanning the positions array for all 100.
-  const previewKeys = useMemo(
-    () => new Set(previewPositions.map((p) => `${p.row}-${p.col}`)),
-    [previewPositions]
-  );
 
   // The three handlers below are wrapped in useCallback so each keeps the
   // same identity between renders. That stable identity is what lets the

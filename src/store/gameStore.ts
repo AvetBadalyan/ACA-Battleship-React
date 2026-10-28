@@ -358,35 +358,3 @@ export const useGameStore = create<GameStore>()(
     }
   )
 );
-
-/**
- * Dev-only helper so you can preview the end-game modal without playing a
- * whole match. In the browser console run:
- *   __previewGameOver('player')   // Victory screen
- *   __previewGameOver('ai')       // Defeat screen
- * This block is stripped from production builds by the import.meta.env.DEV
- * guard (Vite replaces it with `false` and tree-shakes it away).
- */
-if (import.meta.env.DEV) {
-  (window as unknown as Record<string, unknown>).__previewGameOver = (winner: 'player' | 'ai') => {
-    const sampleStats: GameStats = {
-      shotsFired: 42,
-      hits: 17,
-      misses: 25,
-      shipsDestroyed: winner === 'player' ? 5 : 3,
-      startTime: Date.now() - 3 * 60 * 1000,
-      endTime: Date.now(),
-    };
-    useGameStore.setState({
-      phase: 'gameOver',
-      winner,
-      playerStats: sampleStats,
-      aiStats: {
-        ...sampleStats,
-        shotsFired: 41,
-        hits: 14,
-        shipsDestroyed: winner === 'ai' ? 5 : 2,
-      },
-    });
-  };
-}

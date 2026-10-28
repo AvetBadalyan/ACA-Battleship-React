@@ -7,6 +7,30 @@ import { AnimatePresence, motion } from 'framer-motion';
 import { useEffect } from 'react';
 import styles from './App.module.css';
 
+/**
+ * Dev-only: jump straight to the end-game modal with sample stats so it can
+ * be reviewed without playing a whole match. No-op in production builds
+ * (import.meta.env.DEV is replaced with false and tree-shaken away).
+ */
+function previewGameOver(winner: 'player' | 'ai') {
+  if (!import.meta.env.DEV) return;
+  const win = {
+    shotsFired: 72,
+    hits: 17,
+    misses: 55,
+    shipsDestroyed: 5,
+    startTime: Date.now() - 200000,
+    endTime: Date.now(),
+  };
+  const lose = { ...win, hits: 14, shipsDestroyed: 2 };
+  useGameStore.setState({
+    phase: 'gameOver',
+    winner,
+    playerStats: winner === 'player' ? win : lose,
+    aiStats: winner === 'player' ? lose : win,
+  });
+}
+
 function App() {
   const {
     phase,
@@ -66,62 +90,16 @@ function App() {
     }
   }, [isAnimating, phase, setAnimating]);
 
-  // Keyboard handlers
+  // Keyboard handlers. In dev only, V/D jump to the victory/defeat screen so
+  // the end-game modal can be reviewed without playing a full match.
   useKeyboard({
     r: () => {
       if (phase === 'setup') {
         toggleOrientation();
       }
     },
-    // Dev shortcut: press V to preview victory screen, D for defeat
-    v: () => {
-      if (import.meta.env.DEV) {
-        useGameStore.setState({
-          phase: 'gameOver',
-          winner: 'player',
-          playerStats: {
-            shotsFired: 72,
-            hits: 17,
-            misses: 55,
-            shipsDestroyed: 5,
-            startTime: Date.now() - 200000,
-            endTime: Date.now(),
-          },
-          aiStats: {
-            shotsFired: 71,
-            hits: 14,
-            misses: 57,
-            shipsDestroyed: 2,
-            startTime: Date.now() - 200000,
-            endTime: Date.now(),
-          },
-        });
-      }
-    },
-    d: () => {
-      if (import.meta.env.DEV) {
-        useGameStore.setState({
-          phase: 'gameOver',
-          winner: 'ai',
-          playerStats: {
-            shotsFired: 65,
-            hits: 12,
-            misses: 53,
-            shipsDestroyed: 3,
-            startTime: Date.now() - 180000,
-            endTime: Date.now(),
-          },
-          aiStats: {
-            shotsFired: 66,
-            hits: 17,
-            misses: 49,
-            shipsDestroyed: 5,
-            startTime: Date.now() - 180000,
-            endTime: Date.now(),
-          },
-        });
-      }
-    },
+    v: () => previewGameOver('player'),
+    d: () => previewGameOver('ai'),
   });
 
   return (
