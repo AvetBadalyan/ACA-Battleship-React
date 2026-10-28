@@ -3,7 +3,7 @@
   display: flex;
   flex-direction: column;
   background-color: var(--bg-primary);
-  /* Pre-optimized WebP background (~47 KB, down from the original ~287 KB
+  /* Pre-optimized WebP background (~20 KB, down from the original ~287 KB
      JPG). WebP is supported by ~97% of browsers; the solid background-color
      above shows through for the rest. */
   background-image: url('@/assets/battleship-wallpapers.webp');
@@ -13,12 +13,16 @@
   position: relative;
 }
 
+/* Dimming layer over the background photo. Opacity is theme-aware:
+   - dark theme uses a light dim so the (already dark) photo stays visible;
+   - light theme uses a strong dim so the light UI reads over the dark photo.
+   Values live in variables.css as --bg-overlay-opacity. */
 .app::before {
   content: '';
   position: fixed;
   inset: 0;
   background: var(--bg-primary);
-  opacity: 0.85;
+  opacity: var(--bg-overlay-opacity);
   z-index: var(--z-base);
 }
 

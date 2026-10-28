@@ -6,6 +6,10 @@
   --bg-tertiary: #1e2d45;
   --bg-card: #1a2940;
 
+  /* Opacity of the dimming layer over the background photo. The dark theme
+     dims lightly so the already-dark image shows through. */
+  --bg-overlay-opacity: 0.5;
+
   --text-primary: #e8f1ff;
   --text-secondary: #8ba3c7;
   /* muted text is de-emphasized but must still clear WCAG AA on bg-primary,
@@ -93,6 +97,10 @@
   --bg-secondary: #d0e8f5;
   --bg-tertiary: #b8dced;
   --bg-card: #ffffff;
+
+  /* Light theme dims strongly: the light UI must stay readable over the
+     dark background photo. */
+  --bg-overlay-opacity: 0.9;
 
   --text-primary: #1a3a5c;
   --text-secondary: #3a6080;
